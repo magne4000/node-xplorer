@@ -1,0 +1,18 @@
+[submodule "node_modules/express"]
+	path = node_modules/express
+	url = https://github.com/visionmedia/express.git
+[submodule "node_modules/unixlib"]
+	path = node_modules/unixlib
+	url = https://github.com/ditesh/node-unixlib.git
+[submodule "node_modules/jade"]
+	path = node_modules/jade
+	url = https://github.com/visionmedia/jade.git
+[submodule "node_modules/connect"]
+	path = node_modules/connect
+	url = https://github.com/senchalabs/connect.git
+[submodule "node_modules/mime"]
+	path = node_modules/mime
+	url = https://github.com/bentomas/node-mime.git
+[submodule "node_modules/zlib"]
+	path = node_modules/zlib
+	url = https://github.com/kkaefer/node-zlib.git

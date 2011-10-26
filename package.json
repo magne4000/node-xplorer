@@ -1,0 +1,18 @@
+{
+  "author": "Joël Charles <joel.charles91@gmail.com>",
+  "name": "xplorer",
+  "description": "HTML5 advanced file explorer",
+  "version": "0.0.1",
+  "repository": {
+    "url": ""
+  },
+  "engines": {
+    "node": "0.4.11"
+  },
+  "dependencies": {
+    "express": ">= 2.0.x",
+    "jade": ">= 0.16.x",
+    "unixlib": ">= 0.1.x"
+  },
+  "devDependencies": {}
+}
