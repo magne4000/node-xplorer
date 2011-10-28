@@ -12,7 +12,8 @@
   "dependencies": {
     "express": ">= 2.0.x",
     "jade": ">= 0.16.x",
-    "unixlib": ">= 0.1.x"
+    "unixlib": ">= 0.1.x",
+    "less": ">= 0.0.1"
   },
   "devDependencies": {}
 }
