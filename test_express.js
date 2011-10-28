@@ -1,13 +1,31 @@
 var express = require('express'),
-    app = express.createServer(
-      express.logger(),
-      express.bodyParser(),
-      express.methodOverride()
-    );
+    unixlib = require('unixlib'),
+    app = express.createServer();
+
+app.configure(function(){
+    app.set('views', __dirname + '/views');
+    app.set('view engine', 'jade');
+    app.use(express.bodyParser());
+    app.use(express.methodOverride());
+    app.use(express.compiler({ src: __dirname + '/public', enable: ['less'] }));
+    app.use(app.router);
+    app.use(express.static(__dirname + '/public'));
+});
 
 app.set('view engine', 'jade'); // Set jade as default render engine
 app.get('/', function(req, res){
-  res.render('index.jade', {title: "My first NodeJS app", text: "Hello World. This is my first NodeJS app"});
+    res.render('login.jade', {title: "Login"});
+});
+
+app.post('/login/', function(req, res){
+    unixlib.pamauth('system-auth', req.body.user.name, req.body.user.password, function(result) {
+        if (result) {
+            console.log('User %s logged !', req.body.user.name);
+            res.render('index.jade', {title: "Logged", text: ":)"});
+        }else{
+            res.render('index.jade', {title: "Not logged", text: ":("});
+        }
+    });
 });
 app.listen(1337);
 console.log('Express server started on port %s', app.address().port);
