@@ -16,6 +16,79 @@ app.configure(function(){
 });
 
 app.set('view engine', 'jade'); // Set jade as default render engine
+
+
+function jail(req, res, username, password, cb){
+    unixlib.pamauth('system-auth', username, password, function(result) {
+        if (result) {
+            console.log('User %s logged !', username);
+            var pid = nix.fork();
+            if (pid == 0) {
+                // this is the child process, pid = 0
+                passwd.get(username, function(user){
+                    process.setgid(parseInt(user.groupId, 10));
+                    process.setuid(parseInt(user.userId, 10));
+                    console.log('Subprocess owned by '+process.getuid()+':'+process.getgid());
+                    cb(user);
+                });
+                return;
+            } else {
+                res.destroy();
+            }
+        }else{
+            res.render('login.jade', {title: "Not logged", text: ":("});
+        }
+    });
+}
+
+
+app.get('/', function(req, res){
+    console.log('Subprocess owned by '+process.getuid()+':'+process.getgid());
+    res.render('index.jade', {title: "Login"});
+});
+
+app.post('/login/', function(req, res){
+    console.log('Subprocess owned by '+process.getuid()+':'+process.getgid());
+    jail(req, res, req.body.user.name, req.body.user.password, function(user){
+        fs.readdir(user.homedir, function(err, files){
+            res.render('login.jade', {title: "Logged", text: ":)", files: files});
+        });
+    });
+});
+
+
+app.get('/', function(req, res){
+    console.log('Subprocess owned by '+process.getuid()+':'+process.getgid());
+    res.render('index.jade', {title: "Login"});
+});
+
+app.post('/login/', function(req, res){
+    console.log('Subprocess owned by '+process.getuid()+':'+process.getgid());
+    unixlib.pamauth('system-auth', req.body.user.name, req.body.user.password, function(result) {
+        if (result) {
+            console.log('User %s logged !', req.body.user.name);
+            var pid = nix.fork();
+            if (pid == 0) {
+                // this is the child process, pid = 0
+                passwd.get(req.body.user.name, function(user){
+                    process.setgid(parseInt(user.groupId, 10));
+                    process.setuid(parseInt(user.userId, 10));
+                    console.log('Subprocess owned by '+process.getuid()+':'+process.getgid());
+                    fs.readdir(user.homedir, function(err, files){
+                        res.render('login.jade', {title: "Logged", text: ":)", files: files});
+                    });
+                });
+                return;
+            } else {
+                res.destroy();
+            }
+        }else{
+            res.render('login.jade', {title: "Not logged", text: ":("});
+        }
+    });
+});
+
+
 app.get('/', function(req, res){
     console.log('Subprocess owned by '+process.getuid()+':'+process.getgid());
     res.render('index.jade', {title: "Login"});
