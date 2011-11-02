@@ -37,6 +37,7 @@ app.post('/login/', function(req, res){
                         res.render('login.jade', {title: "Logged", text: ":)", files: files});
                     });
                 });
+                return;
             } else {
                 res.destroy();
             }
