@@ -1,5 +1,6 @@
 var express = require('express'),
     unixlib = require('unixlib'),
+    fs = require('fs'),
     app = express.createServer();
 
 app.configure(function(){
@@ -21,7 +22,10 @@ app.post('/login/', function(req, res){
     unixlib.pamauth('system-auth', req.body.user.name, req.body.user.password, function(result) {
         if (result) {
             console.log('User %s logged !', req.body.user.name);
-            res.render('index.jade', {title: "Logged", text: ":)"});
+            fs.readdir(process.env.HOME, function(err, files){
+                console.dir(files);
+                res.render('index.jade', {title: "Logged", text: ":)", files: files});
+            });
         }else{
             res.render('index.jade', {title: "Not logged", text: ":("});
         }
