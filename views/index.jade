@@ -1,7 +1,5 @@
-form(method='post', action='/login/')
-  label Username:
-    input(name='user[name]')
-  label Password:
-    input(name='user[password]', type="password")
-  p
-    input(type="submit")
+p=text
+- if (typeof(files) != 'undefined')
+  ul
+  - for (var file in files)
+    li= files[file]

@@ -2,7 +2,6 @@ var express = require('express'),
     unixlib = require('unixlib'),
     fs = require('fs'),
     passwd = require('passwd'),
-    nix = require('nix'),
     app = express.createServer();
 
 app.configure(function(){
@@ -11,6 +10,8 @@ app.configure(function(){
     app.use(express.bodyParser());
     app.use(express.methodOverride());
     app.use(express.compiler({ src: __dirname + '/public', enable: ['less'] }));
+    app.use(express.cookieParser());
+    app.use(express.session({ secret: "I iz secret passphrase !" }));
     app.use(app.router);
     app.use(express.static(__dirname + '/public'));
 });
@@ -22,19 +23,12 @@ function jail(req, res, username, password, cb){
     unixlib.pamauth('system-auth', username, password, function(result) {
         if (result) {
             console.log('User %s logged !', username);
-            var pid = nix.fork();
-            if (pid == 0) {
-                // this is the child process, pid = 0
-                passwd.get(username, function(user){
-                    process.setgid(parseInt(user.groupId, 10));
-                    process.setuid(parseInt(user.userId, 10));
-                    console.log('Subprocess owned by '+process.getuid()+':'+process.getgid());
-                    cb(user);
-                });
-                return;
-            } else {
-                res.destroy();
-            }
+            passwd.get(username, function(user){
+                //process.setgid(parseInt(user.groupId, 10));
+                //process.setuid(parseInt(user.userId, 10));
+                //console.log('Subprocess owned by '+process.getuid()+':'+process.getgid());
+                cb(user);
+            });
         }else{
             res.render('login.jade', {title: "Not logged", text: ":("});
         }
@@ -43,81 +37,24 @@ function jail(req, res, username, password, cb){
 
 
 app.get('/', function(req, res){
-    console.log('Subprocess owned by '+process.getuid()+':'+process.getgid());
-    res.render('index.jade', {title: "Login"});
-});
-
-app.post('/login/', function(req, res){
-    console.log('Subprocess owned by '+process.getuid()+':'+process.getgid());
-    jail(req, res, req.body.user.name, req.body.user.password, function(user){
-        fs.readdir(user.homedir, function(err, files){
-            res.render('login.jade', {title: "Logged", text: ":)", files: files});
+    if (req.session.auth){
+        console.log(process.env.HOME);
+        fs.readdir(process.env.HOME, function(err, files){
+            console.log('rendering index');
+            res.render('index.jade', {title: "Logged", text: ":)", files: files});
         });
-    });
-});
-
-
-app.get('/', function(req, res){
-    console.log('Subprocess owned by '+process.getuid()+':'+process.getgid());
-    res.render('index.jade', {title: "Login"});
+    }else{
+        console.log('rendering login');
+        res.render('login.jade', {title: "Login"});
+    }
 });
 
 app.post('/login/', function(req, res){
-    console.log('Subprocess owned by '+process.getuid()+':'+process.getgid());
-    unixlib.pamauth('system-auth', req.body.user.name, req.body.user.password, function(result) {
-        if (result) {
-            console.log('User %s logged !', req.body.user.name);
-            var pid = nix.fork();
-            if (pid == 0) {
-                // this is the child process, pid = 0
-                passwd.get(req.body.user.name, function(user){
-                    process.setgid(parseInt(user.groupId, 10));
-                    process.setuid(parseInt(user.userId, 10));
-                    console.log('Subprocess owned by '+process.getuid()+':'+process.getgid());
-                    fs.readdir(user.homedir, function(err, files){
-                        res.render('login.jade', {title: "Logged", text: ":)", files: files});
-                    });
-                });
-                return;
-            } else {
-                res.destroy();
-            }
-        }else{
-            res.render('login.jade', {title: "Not logged", text: ":("});
-        }
+    jail(req, res, req.body.user.name, req.body.user.password, function(user){
+        req.session.auth = true;
+        res.redirect('/');
     });
 });
 
-
-app.get('/', function(req, res){
-    console.log('Subprocess owned by '+process.getuid()+':'+process.getgid());
-    res.render('index.jade', {title: "Login"});
-});
-
-app.post('/login/', function(req, res){
-    console.log('Subprocess owned by '+process.getuid()+':'+process.getgid());
-    unixlib.pamauth('system-auth', req.body.user.name, req.body.user.password, function(result) {
-        if (result) {
-            console.log('User %s logged !', req.body.user.name);
-            var pid = nix.fork();
-            if (pid == 0) {
-                // this is the child process, pid = 0
-                passwd.get(req.body.user.name, function(user){
-                    process.setgid(parseInt(user.groupId, 10));
-                    process.setuid(parseInt(user.userId, 10));
-                    console.log('Subprocess owned by '+process.getuid()+':'+process.getgid());
-                    fs.readdir(user.homedir, function(err, files){
-                        res.render('login.jade', {title: "Logged", text: ":)", files: files});
-                    });
-                });
-                return;
-            } else {
-                res.destroy();
-            }
-        }else{
-            res.render('login.jade', {title: "Not logged", text: ":("});
-        }
-    });
-});
 app.listen(1337);
 console.log('Express server started on port %s', app.address().port);

@@ -7,13 +7,12 @@
     "url": ""
   },
   "engines": {
-    "node": "0.4.11"
+    "node": ">= 0.6.0"
   },
   "dependencies": {
     "express": ">= 2.0.x",
     "jade": ">= 0.16.x",
-    "unixlib": ">= 0.1.x",
-    "nix": ">= 0.0.1",
+    "unixlib": ">= 0.0.1",
     "less": ">= 0.0.1",
     "passwd": ">= 0.0.1"
   },
