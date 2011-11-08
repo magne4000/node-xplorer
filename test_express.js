@@ -1,7 +1,6 @@
 var express = require('express'),
-    unixlib = require('unixlib'),
+    cp = require('child_process'),
     fs = require('fs'),
-    passwd = require('passwd'),
     app = express.createServer();
 
 app.configure(function(){
@@ -18,42 +17,49 @@ app.configure(function(){
 
 app.set('view engine', 'jade'); // Set jade as default render engine
 
-
-function jail(req, res, username, password, cb){
-    unixlib.pamauth('system-auth', username, password, function(result) {
-        if (result) {
-            console.log('User %s logged !', username);
-            passwd.get(username, function(user){
-                //process.setgid(parseInt(user.groupId, 10));
-                //process.setuid(parseInt(user.userId, 10));
-                //console.log('Subprocess owned by '+process.getuid()+':'+process.getgid());
-                cb(user);
-            });
+function jail(args, success, fail){
+    var child = cp.fork(__dirname + '/jail.js');
+    child.send(args);
+    child.on('message', function(m){
+        if (!!m.success){
+            success(m.args);
         }else{
-            res.render('login.jade', {title: "Not logged", text: ":("});
+            fail();
         }
+        child.kill('SIGTERM');
     });
 }
-
 
 app.get('/', function(req, res){
     if (req.session.auth){
         console.log(process.env.HOME);
-        fs.readdir(process.env.HOME, function(err, files){
-            console.log('rendering index');
-            res.render('index.jade', {title: "Logged", text: ":)", files: files});
-        });
+        jail({username: req.session.username, password: req.session.password},
+            function(args){
+                fs.readdir(args.user.homedir, function(err, files){
+                    res.render('index.jade', {title: "Logged", text: ":)", files: files});
+                });
+            },
+            function(){
+                res.render('login.jade', {title: "Not logged", text: ":("});
+            }
+        );
     }else{
-        console.log('rendering login');
         res.render('login.jade', {title: "Login"});
     }
 });
 
 app.post('/login/', function(req, res){
-    jail(req, res, req.body.user.name, req.body.user.password, function(user){
-        req.session.auth = true;
-        res.redirect('/');
-    });
+    jail({username: req.body.user.name, password: req.body.user.password},
+        function(child){
+            req.session.auth = true;
+            req.session.username = req.body.user.name;
+            req.session.password = req.body.user.password;
+            res.redirect('/');
+        },
+        function(child){
+            res.render('login.jade', {title: "Not logged", text: ":("});
+        }
+    );
 });
 
 app.listen(1337);
