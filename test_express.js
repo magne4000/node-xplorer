@@ -11,8 +11,8 @@ app.configure(function(){
     app.use(express.bodyParser());
     app.use(express.methodOverride());
     app.use(express.compiler({ src: __dirname + '/public', enable: ['less'] }));
-    //app.use(express.cookieParser());
-    //app.use(express.session({ secret: "I iz secret passphrase !" }));
+    app.use(express.cookieParser());
+    app.use(express.session({ secret: "I iz secret passphrase !" }));
     app.use(app.router);
     app.use(express.static(__dirname + '/public'));
 });
@@ -65,7 +65,9 @@ function login(username, password, socket){
 
 function logout(socket){
     socket.get('jail', function (err, oJail){
-        oJail.kill(socket);
+        if (!!oJail){
+            oJail.kill(socket);
+        }
     });
 }
 
@@ -75,6 +77,10 @@ io.sockets.on('connection', function (socket) {
     });
 
     socket.on('logout', function (data) {
+        logout(socket);
+    });
+
+    socket.on('disconnect', function (data) {
         logout(socket);
     });
 });
