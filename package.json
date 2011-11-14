@@ -13,8 +13,9 @@
     "express": ">= 2.0.x",
     "jade": ">= 0.16.x",
     "unixlib": ">= 0.1.3",
-    "less": ">= 1.1.4",
-    "passwd": ">= 0.0.1"
+    "less": ">= 1.1.5",
+    "passwd": ">= 0.0.1",
+    "socket.io": ">= 0.8.x"
   },
   "devDependencies": {}
 }

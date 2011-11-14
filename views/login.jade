@@ -5,3 +5,8 @@ form(method='post', action='/login/')
     input(name='user[password]', type="password")
   p
     input(type="submit")
+script(type="text/javascript")
+  $('form').on('submit', function (event){
+      event.preventDefault();
+      socket.emit('login', {username: $('input[name="user[name]"]').val(), password: $('input[name="user[password]"]').val()});
+  });

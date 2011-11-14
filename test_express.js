@@ -1,7 +1,9 @@
 var express = require('express'),
     cp = require('child_process'),
     fs = require('fs'),
-    app = express.createServer();
+    app = express.createServer()
+    io = require('socket.io').listen(app),
+    _res = null;
 
 app.configure(function(){
     app.set('views', __dirname + '/views');
@@ -9,8 +11,8 @@ app.configure(function(){
     app.use(express.bodyParser());
     app.use(express.methodOverride());
     app.use(express.compiler({ src: __dirname + '/public', enable: ['less'] }));
-    app.use(express.cookieParser());
-    app.use(express.session({ secret: "I iz secret passphrase !" }));
+    //app.use(express.cookieParser());
+    //app.use(express.session({ secret: "I iz secret passphrase !" }));
     app.use(app.router);
     app.use(express.static(__dirname + '/public'));
 });
@@ -26,40 +28,60 @@ function jail(args, success, fail){
         }else{
             fail();
         }
+    });
+
+    this.kill = function(socket){
+        _res.partial('login', {title: "Login"}, function(err, str){
+            socket.emit('render', {html: str});
+        });
         child.kill('SIGTERM');
+    };
+    return this;
+}
+
+function login(username, password, socket){
+    var unixlib = require('unixlib'), oJail;
+    unixlib.pamauth('system-auth', username, password, function(result) {
+        if (result){
+            //Jail user !
+            oJail = jail({username: username, password: password},
+                function(args){
+                    socket.emit('title', {title: 'Logged'});
+                    fs.readdir(args.user.homedir, function(err, files){
+                        _res.partial('index', {files: files}, function(err, str){
+                            socket.emit('render', {html: str});
+                        });
+                    });
+                },
+                function(){
+                    socket.emit('title', {title: 'not logged'});
+                    socket.emit('error', {message: 'Wrong credentials'})
+                }          
+            );
+            socket.set('jail', oJail);
+        }
     });
 }
 
-app.get('/', function(req, res){
-    if (req.session.auth){
-        console.log(process.env.HOME);
-        jail({username: req.session.username, password: req.session.password},
-            function(args){
-                fs.readdir(args.user.homedir, function(err, files){
-                    res.render('index.jade', {title: "Logged", text: ":)", files: files});
-                });
-            },
-            function(){
-                res.render('login.jade', {title: "Not logged", text: ":("});
-            }
-        );
-    }else{
-        res.render('login.jade', {title: "Login"});
-    }
+function logout(socket){
+    socket.get('jail', function (err, oJail){
+        oJail.kill(socket);
+    });
+}
+
+io.sockets.on('connection', function (socket) {
+    socket.on('login', function (data) {
+        login(data.username, data.password, socket);
+    });
+
+    socket.on('logout', function (data) {
+        logout(socket);
+    });
 });
 
-app.post('/login/', function(req, res){
-    jail({username: req.body.user.name, password: req.body.user.password},
-        function(child){
-            req.session.auth = true;
-            req.session.username = req.body.user.name;
-            req.session.password = req.body.user.password;
-            res.redirect('/');
-        },
-        function(child){
-            res.render('login.jade', {title: "Not logged", text: ":("});
-        }
-    );
+app.get('/', function(req, res){
+    _res = res;
+    res.render('login.jade', {title: "Login"});
 });
 
 app.listen(1337);
