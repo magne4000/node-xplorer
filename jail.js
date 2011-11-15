@@ -1,5 +1,16 @@
 var unixlib = require('unixlib'),
-    passwd = require('passwd');
+    passwd = require('passwd'),
+    fs = require('fs'),
+    methods = {
+        file_info: function(data){
+            fs.stat('/home/magne/' + data.filename, function(err, stats){
+                process.send({
+                    action: 'file info',
+                    data: stats
+                });
+            });
+        }
+    };
 
 function jail(username, password){
     unixlib.pamauth('system-auth', username, password, function(result) {
@@ -18,5 +29,9 @@ function jail(username, password){
 }
 
 process.on('message', function(m){
-    jail(m.username, m.password);
+    if (!!m.action){
+        methods[m.action.replace(/ /, '_')](m.data);
+    }else{
+        jail(m.username, m.password);
+    }
 });

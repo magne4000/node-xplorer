@@ -20,13 +20,19 @@ app.configure(function(){
 app.set('view engine', 'jade'); // Set jade as default render engine
 
 function jail(args, success, fail){
-    var child = cp.fork(__dirname + '/jail.js');
+    var child = cp.fork(__dirname + '/jail.js'), callbacks = {};
     child.send(args);
     child.on('message', function(m){
-        if (!!m.success){
-            success(m.args);
+        if (!!m.action){
+            if (!!callbacks[m.action]){
+                callbacks[m.action](m.data);
+            }
         }else{
-            fail();
+            if (!!m.success){
+                success(m.args);
+            }else{
+                fail();
+            }
         }
     });
 
@@ -36,6 +42,15 @@ function jail(args, success, fail){
         });
         child.kill('SIGTERM');
     };
+
+    this.jailed = function(action, data, callback){
+        callbacks[action] = callback;
+        child.send({
+            action: action,
+            data: data
+        });
+    };
+
     return this;
 }
 
@@ -71,6 +86,14 @@ function logout(socket){
     });
 }
 
+function performJailedAction(action, data, socket, callback){
+    socket.get('jail', function (err, oJail){
+        if (!!oJail){
+            oJail.jailed(action, data, callback);
+        }
+    });
+}
+
 io.sockets.on('connection', function (socket) {
     socket.on('login', function (data) {
         login(data.username, data.password, socket);
@@ -82,6 +105,12 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('disconnect', function (data) {
         logout(socket);
+    });
+
+    socket.on('file info', function (data) {
+        performJailedAction('file info', data, socket, function(args){
+            socket.emit('file info', {data: args});
+        });
     });
 });
 

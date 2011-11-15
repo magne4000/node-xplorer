@@ -16,9 +16,15 @@ html(lang="en")
       socket.on('error', function (data) {
           console.log(data);
       });
+      socket.on('file info', function (data) {
+          console.log(data);
+      });
       $(document).ready(function() {
           $('#disconnect').on('click', function(){
               socket.emit('logout');
+          });
+          $(document).on('click', 'li', function(){
+              socket.emit('file info', {filename: $(this).text()});
           });
       });
   body
