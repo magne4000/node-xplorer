@@ -3,7 +3,7 @@ var unixlib = require('unixlib'),
     fs = require('fs'),
     methods = {
         file_info: function(data){
-            fs.stat('/home/magne/' + data.filename, function(err, stats){
+            fs.stat(data.filepath, function(err, stats){
                 process.send({
                     action: 'file info',
                     data: stats

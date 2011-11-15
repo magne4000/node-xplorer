@@ -24,7 +24,7 @@ html(lang="en")
               socket.emit('logout');
           });
           $(document).on('click', 'li', function(){
-              socket.emit('file info', {filename: $(this).text()});
+              socket.emit('file info', {filepath: $(this).data('filepath')});
           });
       });
   body

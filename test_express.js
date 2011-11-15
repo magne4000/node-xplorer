@@ -63,7 +63,7 @@ function login(username, password, socket){
                 function(args){
                     socket.emit('title', {title: 'Logged'});
                     fs.readdir(args.user.homedir, function(err, files){
-                        _res.partial('index', {files: files}, function(err, str){
+                        _res.partial('index', {files: files, rootfolder: args.user.homedir}, function(err, str){
                             socket.emit('render', {html: str});
                         });
                     });
