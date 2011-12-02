@@ -2,10 +2,10 @@ var unixlib = require('unixlib'),
     passwd = require('passwd'),
     fs = require('fs'),
     methods = {
-        file_info: function(data){
+        'file stat': function(data){
             fs.stat(data.filepath, function(err, stats){
                 process.send({
-                    action: 'file info',
+                    action: data.action,
                     data: stats
                 });
             });
@@ -30,7 +30,7 @@ function jail(username, password){
 
 process.on('message', function(m){
     if (!!m.action){
-        methods[m.action.replace(/ /, '_')](m.data);
+        methods[m.action](m.data);
     }else{
         jail(m.username, m.password);
     }

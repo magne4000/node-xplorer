@@ -38,15 +38,15 @@ function jail(args, success, fail){
 
     this.kill = function(socket){
         _res.partial('login', {title: "Login"}, function(err, str){
-            socket.emit('render', {html: str});
+            socket.send(JSON.stringify({action: 'render', html: str}));
         });
         child.kill('SIGTERM');
     };
 
-    this.jailed = function(action, data, callback){
-        callbacks[action] = callback;
+    this.jailed = function(data, callback){
+        callbacks[data.action] = callback;
         child.send({
-            action: action,
+            action: data.action,
             data: data
         });
     };
@@ -61,16 +61,16 @@ function login(username, password, socket){
             //Jail user !
             oJail = jail({username: username, password: password},
                 function(args){
-                    socket.emit('title', {title: 'Logged'});
+                    socket.send(JSON.stringify({action: 'title', title: 'Logged'}));
                     fs.readdir(args.user.homedir, function(err, files){
                         _res.partial('index', {files: files, rootfolder: args.user.homedir}, function(err, str){
-                            socket.emit('render', {html: str});
+                            socket.send(JSON.stringify({action: 'render', html: str}));
                         });
                     });
                 },
                 function(){
-                    socket.emit('title', {title: 'not logged'});
-                    socket.emit('error', {message: 'Wrong credentials'})
+                    socket.send(JSON.stringify({action: 'title', title: 'not logged'}));
+                    socket.send(JSON.stringify({action: 'error', message: 'Wrong credentials'}));
                 }          
             );
             socket.set('jail', oJail);
@@ -86,10 +86,10 @@ function logout(socket){
     });
 }
 
-function performJailedAction(action, data, socket, callback){
+function performJailedAction(data, socket, callback){
     socket.get('jail', function (err, oJail){
         if (!!oJail){
-            oJail.jailed(action, data, callback);
+            oJail.jailed(data, callback);
         }
     });
 }
@@ -107,9 +107,10 @@ io.sockets.on('connection', function (socket) {
         logout(socket);
     });
 
-    socket.on('file info', function (data) {
-        performJailedAction('file info', data, socket, function(args){
-            socket.emit('file info', {data: args});
+    socket.on('message', function (data) {
+        data = JSON.parse(data);
+        performJailedAction(data, socket, function(args){
+            socket.send(JSON.stringify({action: data.action, data: args}));
         });
     });
 });
