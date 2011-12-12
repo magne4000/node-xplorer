@@ -74,6 +74,9 @@ function login(username, password, socket){
                 }          
             );
             socket.set('jail', oJail);
+        }else{
+            socket.send(JSON.stringify({action: 'title', title: 'not logged'}));
+            socket.send(JSON.stringify({action: 'error', message: 'Wrong credentials'}));
         }
     });
 }
@@ -95,9 +98,6 @@ function performJailedAction(data, socket, callback){
 }
 
 io.sockets.on('connection', function (socket) {
-    socket.on('login', function (data) {
-        login(data.username, data.password, socket);
-    });
 
     socket.on('disconnect', function (data) {
         logout(socket);
@@ -105,7 +105,9 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('message', function (data) {
         data = JSON.parse(data);
-        if (data.action == 'logout'){
+        if(data.action == 'login'){
+            login(data.username, data.password, socket);
+        }else if (data.action == 'logout'){
             logout(socket);
         }else{
             performJailedAction(data, socket, function(args){

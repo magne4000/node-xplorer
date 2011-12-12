@@ -1,12 +1,7 @@
-form(method='post', action='/login/')
+form#loginform(method='post', action='/login/')
   label Username:
     input(name='user[name]')
   label Password:
     input(name='user[password]', type="password")
   p
-    input(type="submit")
-script(type="text/javascript")
-  $('form').on('submit', function (event){
-      event.preventDefault();
-      socket.emit('login', {username: $('input[name="user[name]"]').val(), password: $('input[name="user[password]"]').val()});
-  });
+    input#login(type="submit", value="Login")

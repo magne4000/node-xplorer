@@ -29,6 +29,10 @@ socket.on('message', function (data) {
 });
 
 $(document).ready(function() {
+    $('#loginform').on('submit', function (event){
+        event.preventDefault();
+        emit('login', {username: $('input[name="user[name]"]').val(), password: $('input[name="user[password]"]').val()});
+    });
     $('#disconnect').on('click', function(){
         emit('logout');
     });
