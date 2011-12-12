@@ -99,19 +99,19 @@ io.sockets.on('connection', function (socket) {
         login(data.username, data.password, socket);
     });
 
-    socket.on('logout', function (data) {
-        logout(socket);
-    });
-
     socket.on('disconnect', function (data) {
         logout(socket);
     });
 
     socket.on('message', function (data) {
         data = JSON.parse(data);
-        performJailedAction(data, socket, function(args){
-            socket.send(JSON.stringify({action: data.action, data: args}));
-        });
+        if (data.action == 'logout'){
+            logout(socket);
+        }else{
+            performJailedAction(data, socket, function(args){
+                socket.send(JSON.stringify({action: data.action, data: args}));
+            });
+        }
     });
 });
 
