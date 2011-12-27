@@ -12,7 +12,7 @@ app.configure(function(){
     app.use(express.methodOverride());
     app.use(express.compiler({ src: __dirname + '/public', enable: ['less'] }));
     app.use(express.cookieParser());
-    app.use(express.session({ secret: "I iz secret passphrase !" }));
+    app.use(express.session({ secret: "I iz secret passphrase ! (change me!)" }));
     app.use(app.router);
     app.use(express.static(__dirname + '/public'));
 });

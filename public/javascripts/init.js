@@ -13,6 +13,7 @@ var socket = io.connect(),
             console.log(data);
         }
     };
+
 function emit(action, data){
     data = data || {};
     data.action = action;
