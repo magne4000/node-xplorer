@@ -2,6 +2,7 @@ var socket = io.connect(),
     methods = {
         'render': function(data){
             $('#content').html(data.html);
+            var myCodeMirror = CodeMirror.fromTextArea($('#editor').get(0));
         },
         'title': function(data){
             $('title').text(data.title);
