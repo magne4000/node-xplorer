@@ -1,23 +1,23 @@
 var express = require('express'),
     cp = require('child_process'),
     fs = require('fs'),
-    app = express.createServer()
+    less = require('connect-less'),
+    app = express.createServer(),
     io = require('socket.io').listen(app),
     _res = null;
 
 app.configure(function(){
     app.set('views', __dirname + '/views');
     app.set('view engine', 'jade');
+    app.set('view options', { layout: false });
     app.use(express.bodyParser());
     app.use(express.methodOverride());
-    app.use(express.compiler({ src: __dirname + '/public', enable: ['less'] }));
-    app.use(express.cookieParser());
+    app.use(less({ src: __dirname + '/public/' }));
+    app.use(express.cookieParser("secret"));
     app.use(express.session({ secret: "I iz secret passphrase ! (change me!)" }));
     app.use(app.router);
     app.use(express.static(__dirname + '/public'));
 });
-
-app.set('view engine', 'jade'); // Set jade as default render engine
 
 function jail(args, success, fail){
     var child = cp.fork(__dirname + '/jail.js'), callbacks = {};
@@ -37,7 +37,7 @@ function jail(args, success, fail){
     });
 
     this.kill = function(socket){
-        _res.partial('login', {title: "Login"}, function(err, str){
+        _res.partial('includes/partial/login', {title: "Login"}, function(err, str){
             socket.send(JSON.stringify({action: 'render', html: str}));
         });
         child.kill('SIGTERM');
@@ -119,8 +119,8 @@ io.sockets.on('connection', function (socket) {
 
 app.get('/', function(req, res){
     _res = res;
-    res.render('login.jade', {title: "Login"});
+    res.render('use', {title: "Login", content: "login"});
 });
 
 app.listen(1337);
-console.log('Express server started on port %s', app.address().port);
+console.log('Express server started on port %s', 1337);
