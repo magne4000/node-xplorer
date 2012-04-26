@@ -61,22 +61,22 @@ function login(username, password, socket){
             //Jail user !
             oJail = jail({username: username, password: password},
                 function(args){
-                    socket.send(JSON.stringify({action: 'title', title: 'Logged'}));
+                    socket.send(JSON.stringify({action: 'title', data: {title: 'Logged'}}));
                     fs.readdir(args.user.homedir, function(err, files){
                         _res.partial('index', {files: files, rootfolder: args.user.homedir}, function(err, str){
-                            socket.send(JSON.stringify({action: 'render', html: str}));
+                            socket.send(JSON.stringify({action: 'render', data: {html: str}}));
                         });
                     });
                 },
                 function(){
-                    socket.send(JSON.stringify({action: 'title', title: 'not logged'}));
-                    socket.send(JSON.stringify({action: 'error', message: 'Wrong credentials'}));
+                    socket.send(JSON.stringify({action: 'title', data: {title: 'not logged'}}));
+                    socket.send(JSON.stringify({action: 'error', data: {message: 'Wrong credentials'}}));
                 }          
             );
             socket.set('jail', oJail);
         }else{
-            socket.send(JSON.stringify({action: 'title', title: 'not logged'}));
-            socket.send(JSON.stringify({action: 'error', message: 'Wrong credentials'}));
+            socket.send(JSON.stringify({action: 'title', data: {title: 'not logged'}}));
+            socket.send(JSON.stringify({action: 'error', data: {message: 'Wrong credentials'}}));
         }
     });
 }

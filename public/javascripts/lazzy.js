@@ -16,7 +16,7 @@
             .appendTo('head');
     };
 
-    $(document).on('newfile', '#editor', function(filename){
+    $(document).on('newfile', '#editor', function(event, filename){
         var ext = filename.split('.').pop();
         switch(ext){
             case 'js':

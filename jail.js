@@ -6,7 +6,19 @@ var unixlib = require('unixlib'),
             fs.stat(data.filepath, function(err, stats){
                 process.send({
                     action: data.action,
-                    data: stats
+                    data: stats,
+                });
+            });
+        },
+        'file read': function(data){
+            fs.readFile(data.filepath, 'utf-8', function (err, content) {
+                var ret = {
+                    'content': content,
+                    'filepath': data.filepath
+                };
+                process.send({
+                    action: data.action,
+                    data: ret,
                 });
             });
         }

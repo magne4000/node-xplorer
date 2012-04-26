@@ -1,8 +1,9 @@
 var socket = io.connect(),
+    cm = null,
     methods = {
         'render': function(data){
             $('#content').html(data.html);
-            var myCodeMirror = CodeMirror.fromTextArea($('#editor').get(0));
+            cm = CodeMirror.fromTextArea($('#editor').get(0));
             $('#editor').trigger('create');
         },
         'title': function(data){
@@ -13,6 +14,10 @@ var socket = io.connect(),
         },
         'file stat': function(data){
             console.log(data);
+        },
+        'file read': function(data){
+            cm.setValue(data.content);
+            $('#editor').trigger('newfile', data.filepath);
         }
     };
 
@@ -28,7 +33,7 @@ function receive(action, data){
 
 socket.on('message', function (data) {
     data = JSON.parse(data);
-    receive(data.action, data);
+    receive(data.action, data.data);
 });
 
 $(document).ready(function() {
@@ -39,7 +44,10 @@ $(document).ready(function() {
     $('#disconnect').on('click', function(){
         emit('logout');
     });
-    $(document).on('click', 'li', function(){
+    /*$(document).on('click', 'li', function(){
         emit('file stat', {filepath: $(this).data('filepath')});
+    });*/
+    $(document).on('click', 'li', function(){
+        emit('file read', {filepath: $(this).data('filepath')});
     });
 });
