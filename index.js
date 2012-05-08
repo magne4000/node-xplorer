@@ -19,6 +19,8 @@ app.configure(function(){
     app.use(express.static(__dirname + '/public'));
 });
 
+// Modify received data from jailed process
+// and send them to client
 var alterAndSend = function(socket, args) {
     //On jailed mode, must set data.action = 'render' in order to
     //render result with _res.partial

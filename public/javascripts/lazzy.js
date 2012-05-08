@@ -3,13 +3,14 @@
         'javascript': false,
         'xml': false
     },
-    load = function(mode){
+    set = function(mode){
         if (!modes[mode]){
-            _load(mode);
+            load(mode);
             modes[mode] = true;
         }
+        cm.setOption('mode', mode);
     },
-    _load = function(mode){
+    load = function(mode){
         $('<script/>')
             .attr('type', 'text/javascript')
             .attr('src', '/codemirror/mode/'+mode+'/'+mode+'.js')
@@ -20,10 +21,10 @@
         var ext = filename.split('.').pop();
         switch(ext){
             case 'js':
-                load('javascript');
+                set('javascript');
                 break;
             case 'xml':
-                load('xml');
+                set('xml');
                 break;
         }
     });
