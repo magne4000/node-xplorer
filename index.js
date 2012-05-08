@@ -31,9 +31,8 @@ var alterAndSend = function(socket, args) {
             socket.send(JSON.stringify({action: args.action, data: args.data}));
         }
     }
-};
-
-function jail(args, socket, success, fail){
+},
+jail = function(args, socket, success, fail){
     var child = cp.fork(__dirname + '/jail.js'), isLogged = false, mysocket = socket;
     child.send(args);
     child.on('message', function(m){
@@ -67,7 +66,7 @@ function jail(args, socket, success, fail){
     };
 
     return this;
-}
+};
 
 function login(username, password, socket){
     var unixlib = require('unixlib'), oJail;
@@ -113,6 +112,7 @@ function performJailedAction(data, socket){
     });
 }
 
+io.set('log level', 1); //No more debug output
 io.sockets.on('connection', function (socket) {
 
     socket.on('disconnect', function (data) {
