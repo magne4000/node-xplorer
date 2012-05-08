@@ -11,16 +11,31 @@ var unixlib = require('unixlib'),
             });
         },
         'file read': function(data){
-            fs.readFile(data.filepath, 'utf-8', function (err, content) {
-                var ret = {
-                    'content': content,
-                    'filepath': data.filepath
-                };
-                process.send({
-                    action: data.action,
-                    data: ret,
+            var stats = fs.statSync(data.filepath);
+            if (stats.isDirectory()){
+                fs.readdir(data.filepath, function (err, files) {
+                    var ret = {
+                        'files': files,
+                        'filepath': data.filepath
+                    };
+                    process.send({
+                        partial: 'filelist',
+                        action: 'render',
+                        data: ret,
+                    });
                 });
-            });
+            }else if(stats.isFile()){
+                fs.readFile(data.filepath, 'utf-8', function (err, content) {
+                    var ret = {
+                        'content': content,
+                        'filepath': data.filepath
+                    };
+                    process.send({
+                        action: data.action,
+                        data: ret,
+                    });
+                });
+            }
         }
     };
 

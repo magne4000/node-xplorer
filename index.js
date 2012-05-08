@@ -19,19 +19,35 @@ app.configure(function(){
     app.use(express.static(__dirname + '/public'));
 });
 
-function jail(args, success, fail){
-    var child = cp.fork(__dirname + '/jail.js'), callbacks = {};
+var alterAndSend = function(socket, args) {
+    //On jailed mode, must set data.action = 'render' in order to
+    //render result with _res.partial
+    if (!!args.action){
+        if (args.action == 'render'){
+            _res.partial('includes/partial/' + args.partial, {files: args.data.files, rootfolder: args.data.filepath}, function(err, str){
+                socket.send(JSON.stringify({action: 'render', data: {html: str}}));
+            });
+        }else{
+            socket.send(JSON.stringify({action: args.action, data: args.data}));
+        }
+    }
+};
+
+function jail(args, socket, success, fail){
+    var child = cp.fork(__dirname + '/jail.js'), isLogged = false, mysocket = socket;
     child.send(args);
     child.on('message', function(m){
-        if (!!m.action){
-            if (!!callbacks[m.action]){
-                callbacks[m.action](m.data);
-            }
+        if (isLogged){
+            //Data received by child process altered by server
+            //and then sent to client
+            alterAndSend(socket, m);
         }else{
             if (!!m.success){
                 success(m.args);
+                isLogged = true;
             }else{
                 fail();
+                isLogged = false;
             }
         }
     });
@@ -43,8 +59,7 @@ function jail(args, success, fail){
         child.kill('SIGTERM');
     };
 
-    this.jailed = function(data, callback){
-        callbacks[data.action] = callback;
+    this.jailed = function(data, socket){
         child.send({
             action: data.action,
             data: data
@@ -60,10 +75,11 @@ function login(username, password, socket){
         if (result){
             //Jail user !
             oJail = jail({username: username, password: password},
+                socket,
                 function(args){
                     socket.send(JSON.stringify({action: 'title', data: {title: 'Logged'}}));
                     fs.readdir(args.user.homedir, function(err, files){
-                        _res.partial('index', {files: files, rootfolder: args.user.homedir}, function(err, str){
+                        _res.partial('includes/partial/filelist', {files: files, rootfolder: args.user.homedir}, function(err, str){
                             socket.send(JSON.stringify({action: 'render', data: {html: str}}));
                         });
                     });
@@ -89,10 +105,10 @@ function logout(socket){
     });
 }
 
-function performJailedAction(data, socket, callback){
+function performJailedAction(data, socket){
     socket.get('jail', function (err, oJail){
         if (!!oJail){
-            oJail.jailed(data, callback);
+            oJail.jailed(data, socket);
         }
     });
 }
@@ -110,9 +126,7 @@ io.sockets.on('connection', function (socket) {
         }else if (data.action == 'logout'){
             logout(socket);
         }else{
-            performJailedAction(data, socket, function(args){
-                socket.send(JSON.stringify({action: data.action, data: args}));
-            });
+            performJailedAction(data, socket);
         }
     });
 });
