@@ -4,7 +4,7 @@
         'xml': false
     },
     set = function(mode){
-        if (!modes[mode]){
+        if (!!mode && !modes[mode]){
             load(mode);
             modes[mode] = true;
         }
@@ -24,8 +24,27 @@
                 set('javascript');
                 break;
             case 'xml':
+            case 'xsd':
                 set('xml');
                 break;
+            case 'css':
+                set('css');
+                break;
+            case 'htm':
+            case 'html':
+                set('htmlmixed');
+                break;
+            case 'less':
+                set('less');
+                break;
+            case 'php':
+                set('php');
+                break;
+            case 'py':
+                set('python');
+                break;
+            default:
+               set(null); 
         }
     });
 })( jQuery );
