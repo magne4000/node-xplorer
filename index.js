@@ -1,10 +1,10 @@
 var express = require('express'),
-    cp = require('child_process'),
     fs = require('fs'),
     less = require('connect-less'),
     app = express.createServer(),
     io = require('socket.io').listen(app),
-    jade = require('jade');
+    jade = require('jade'),
+    jail = require('jail');
 
 app.configure(function(){
     app.set('views', __dirname + '/views');
@@ -19,60 +19,6 @@ app.configure(function(){
     app.use(express.static(__dirname + '/public'));
 });
 
-// Modify received data from jailed process
-// and send them to client
-var alterAndSend = function(socket, args) {
-    //On jailed mode, must set data.action = 'render' in order to
-    //render result with _res.partial
-    if (!!args.action){
-        if (args.action == 'render'){
-            var sPartial = getPartial('includes/partial/' + args.partial, {files: args.data.files, rootfolder: args.data.filepath});
-            socket.send(JSON.stringify({action: 'render', data: {html: sPartial}}));
-        }else{
-            socket.send(JSON.stringify({action: args.action, data: args.data}));
-        }
-    }
-},
-jail = function(args, socket, success, fail){
-    var child = cp.fork(__dirname + '/jail.js'), isLogged = false;
-    child.send(args);
-    child.on('message', function(m){
-        if (isLogged){
-            //Data received by child process altered by server
-            //and then sent to client
-            alterAndSend(socket, m);
-        }else{
-            if (!!m.success){
-                success(m.args);
-                isLogged = true;
-                //Send home file list
-                child.send({
-                    action: 'file read',
-                    data: {filepath: '/'} //Chrooted home dir
-                });
-            }else{
-                fail();
-                isLogged = false;
-            }
-        }
-    });
-
-    this.kill = function(socket){
-        var sPartial = getPartial('includes/partial/login', {title: "Login"});
-        socket.send(JSON.stringify({action: 'render', html: sPartial}));
-        child.kill('SIGTERM');
-    };
-
-    this.jailed = function(data){
-        child.send({
-            action: data.action,
-            data: data
-        });
-    };
-
-    return this;
-};
-
 function getPartial(path, args){
     if (path.indexOf('.jade', path.length - 5) === -1){
         path = path + '.jade';
@@ -83,26 +29,43 @@ function getPartial(path, args){
 }
 
 function login(username, password, socket){
-    var unixlib = require('unixlib'), oJail;
-    unixlib.pamauth('system-auth', username, password, function(result) {
-        if (result){
-            //Jail user !
-            oJail = jail({username: username, password: password},
-                socket,
-                function(args){
-                    socket.send(JSON.stringify({action: 'title', data: {title: 'Logged'}}));
-                },
-                function(){
-                    socket.send(JSON.stringify({action: 'title', data: {title: 'not logged'}}));
-                    socket.send(JSON.stringify({action: 'error', data: {message: 'Wrong credentials'}}));
-                }          
-            );
-            socket.set('jail', oJail);
-        }else{
-            socket.send(JSON.stringify({action: 'title', data: {title: 'not logged'}}));
-            socket.send(JSON.stringify({action: 'error', data: {message: 'Wrong credentials'}}));
+    var oJail = new jail.jail(
+        {
+            username: username,
+            password: password
+        },
+        {
+            'cb': function(args) {
+                if (!!args.action){
+                    if (args.action == 'render'){
+                        var sPartial = getPartial('includes/partial/' + args.partial, {files: args.data.files, rootfolder: args.data.filepath});
+                        socket.send(JSON.stringify({action: 'render', data: {html: sPartial}}));
+                    }else if(args.action == 'error'){
+                        console.log(args);
+                    }else{
+                        socket.send(JSON.stringify({action: args.action, data: args.data}));
+                    }
+                }
+            },
+            'jailedsuccessloginargs': {
+                action: 'file read',
+                filepath: '/'
+            },
+            'onsuccesslogin': function(args){
+                socket.send(JSON.stringify({action: 'title', data: {title: 'Logged'}}));
+            },
+            'onfailedlogin': function(){
+                socket.send(JSON.stringify({action: 'title', data: {title: 'not logged'}}));
+                socket.send(JSON.stringify({action: 'error', data: {message: 'Wrong credentials'}}));
+            },
+            'onbeforekill': function(){
+                var sPartial = getPartial('includes/partial/login', {title: "Login"});
+                socket.send(JSON.stringify({action: 'render', html: sPartial}));
+            },
+            'methodsfile': __dirname + '/methods.js'
         }
-    });
+    );
+    socket.set('jail', oJail);
 }
 
 function logout(socket){

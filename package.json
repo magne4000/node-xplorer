@@ -7,13 +7,13 @@
     "url": ""
   },
   "engines": {
-    "node": ">= 0.6.15"
+    "node": ">= 0.6.0"
   },
   "dependencies": {
     "express": "*",
     "jade": "*",
     "unixlib": "*",
-	"connect-less": "*",
+    "jail": "*",
     "less": "*",
     "passwd": "*",
     "socket.io": "*",
