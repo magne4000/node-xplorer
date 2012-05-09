@@ -1,6 +1,7 @@
 var unixlib = require('unixlib'),
     passwd = require('passwd'),
     fs = require('fs'),
+    posix = require('posix'),
     methods = {
         'file stat': function(data){
             fs.stat(data.filepath, function(err, stats){
@@ -44,10 +45,18 @@ function jail(username, password){
         if (result) {
             console.log('User %s logged !', username);
             passwd.get(username, function(user){
-                process.setgid(parseInt(user.groupId, 10));
-                process.setuid(parseInt(user.userId, 10));
-                console.log('Subprocess owned by '+process.getuid()+':'+process.getgid());
-                process.send({success: true, args:{user: user}});
+                process.title = 'node-xplorer-jailed-'+username;
+                try {
+                    process.chdir(user.homedir);
+                    posix.chroot(user.homedir);
+                    process.setgid(parseInt(user.groupId, 10));
+                    process.setuid(parseInt(user.userId, 10));
+                    console.log('Subprocess successfully jailed by ' + username + ' ('+process.getuid()+':'+process.getgid()+')');
+                    process.send({success: true, args:{user: user}});
+                } catch (err) {
+                    console.log(err);
+                    process.send({success: false});
+                }
             });
         }else{
             process.send({success: false});
