@@ -12,7 +12,16 @@ var unixlib = require('unixlib'),
             });
         },
         'file read': function(data){
-            var stats = fs.statSync(data.filepath);
+            var stats;
+            try {
+                stats = fs.statSync(data.filepath);
+            } catch (err) {
+                process.send({
+                    action: 'error',
+                    data: err
+                });
+                return;
+            }
             if (stats.isDirectory()){
                 fs.readdir(data.filepath, function (err, files) {
                     var ret = {
@@ -52,6 +61,7 @@ function jail(username, password){
                     process.setgid(parseInt(user.groupId, 10));
                     process.setuid(parseInt(user.userId, 10));
                     console.log('Subprocess successfully jailed by ' + username + ' ('+process.getuid()+':'+process.getgid()+')');
+                    user.homedir = '/';
                     process.send({success: true, args:{user: user}});
                 } catch (err) {
                     console.log(err);

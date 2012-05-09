@@ -34,7 +34,7 @@ var alterAndSend = function(socket, args) {
     }
 },
 jail = function(args, socket, success, fail){
-    var child = cp.fork(__dirname + '/jail.js'), isLogged = false, mysocket = socket;
+    var child = cp.fork(__dirname + '/jail.js'), isLogged = false;
     child.send(args);
     child.on('message', function(m){
         if (isLogged){
@@ -45,6 +45,11 @@ jail = function(args, socket, success, fail){
             if (!!m.success){
                 success(m.args);
                 isLogged = true;
+                //Send home file list
+                child.send({
+                    action: 'file read',
+                    data: {filepath: '/'} //Chrooted home dir
+                });
             }else{
                 fail();
                 isLogged = false;
@@ -58,7 +63,7 @@ jail = function(args, socket, success, fail){
         child.kill('SIGTERM');
     };
 
-    this.jailed = function(data, socket){
+    this.jailed = function(data){
         child.send({
             action: data.action,
             data: data
@@ -86,10 +91,6 @@ function login(username, password, socket){
                 socket,
                 function(args){
                     socket.send(JSON.stringify({action: 'title', data: {title: 'Logged'}}));
-                    fs.readdir(args.user.homedir, function(err, files){
-                        var sPartial = getPartial('includes/partial/filelist', {files: files, rootfolder: args.user.homedir});
-                        socket.send(JSON.stringify({action: 'render', data: {html: sPartial}}));
-                    });
                 },
                 function(){
                     socket.send(JSON.stringify({action: 'title', data: {title: 'not logged'}}));
