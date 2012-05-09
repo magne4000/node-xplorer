@@ -4,7 +4,7 @@ var express = require('express'),
     less = require('connect-less'),
     app = express.createServer(),
     io = require('socket.io').listen(app),
-    _res = null;
+    jade = require('jade');
 
 app.configure(function(){
     app.set('views', __dirname + '/views');
@@ -26,9 +26,8 @@ var alterAndSend = function(socket, args) {
     //render result with _res.partial
     if (!!args.action){
         if (args.action == 'render'){
-            _res.partial('includes/partial/' + args.partial, {files: args.data.files, rootfolder: args.data.filepath}, function(err, str){
-                socket.send(JSON.stringify({action: 'render', data: {html: str}}));
-            });
+            var sPartial = getPartial('includes/partial/' + args.partial, {files: args.data.files, rootfolder: args.data.filepath});
+            socket.send(JSON.stringify({action: 'render', data: {html: sPartial}}));
         }else{
             socket.send(JSON.stringify({action: args.action, data: args.data}));
         }
@@ -54,9 +53,8 @@ jail = function(args, socket, success, fail){
     });
 
     this.kill = function(socket){
-        _res.partial('includes/partial/login', {title: "Login"}, function(err, str){
-            socket.send(JSON.stringify({action: 'render', html: str}));
-        });
+        var sPartial = getPartial('includes/partial/login', {title: "Login"});
+        socket.send(JSON.stringify({action: 'render', html: sPartial}));
         child.kill('SIGTERM');
     };
 
@@ -70,6 +68,15 @@ jail = function(args, socket, success, fail){
     return this;
 };
 
+function getPartial(path, args){
+    if (path.indexOf('.jade', path.length - 5) === -1){
+        path = path + '.jade';
+    }
+    var tFile = fs.readFileSync('views/' + path, 'utf8');
+    var fn = jade.compile(tFile);
+    return fn(args);
+}
+
 function login(username, password, socket){
     var unixlib = require('unixlib'), oJail;
     unixlib.pamauth('system-auth', username, password, function(result) {
@@ -80,9 +87,8 @@ function login(username, password, socket){
                 function(args){
                     socket.send(JSON.stringify({action: 'title', data: {title: 'Logged'}}));
                     fs.readdir(args.user.homedir, function(err, files){
-                        _res.partial('includes/partial/filelist', {files: files, rootfolder: args.user.homedir}, function(err, str){
-                            socket.send(JSON.stringify({action: 'render', data: {html: str}}));
-                        });
+                        var sPartial = getPartial('includes/partial/filelist', {files: files, rootfolder: args.user.homedir});
+                        socket.send(JSON.stringify({action: 'render', data: {html: sPartial}}));
                     });
                 },
                 function(){
@@ -105,6 +111,7 @@ function logout(socket){
         }
     });
 }
+
 
 function performJailedAction(data, socket){
     socket.get('jail', function (err, oJail){
@@ -134,7 +141,6 @@ io.sockets.on('connection', function (socket) {
 });
 
 app.get('/', function(req, res){
-    _res = res;
     res.render('use', {title: "Login", content: "login"});
 });
 
