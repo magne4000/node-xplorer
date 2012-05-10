@@ -80,7 +80,7 @@ function logout(socket){
 function performJailedAction(data, socket){
     socket.get('jail', function (err, oJail){
         if (!!oJail){
-            oJail.jailed(data, socket);
+            oJail.jailed(data);
         }
     });
 }
