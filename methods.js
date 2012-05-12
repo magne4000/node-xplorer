@@ -13,11 +13,9 @@ var methods = {
         try {
             stats = fs.statSync(data.filepath);
         } catch (err) {
-            //TODO find a way to send only error string
-            console.log(err);
             process.send({
                 action: 'error',
-                data: err
+                data: err.name + ' : ' + err.message
             });
             return;
         }

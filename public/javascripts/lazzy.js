@@ -1,8 +1,5 @@
 (function( $ ) {
-    var modes = {
-        'javascript': false,
-        'xml': false
-    },
+    var modes = {},
     set = function(mode){
         if (!!mode && !modes[mode]){
             load(mode);
