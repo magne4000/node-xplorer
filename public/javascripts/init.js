@@ -2,7 +2,8 @@ var socket = io.connect(),
     cm = null,
     methods = {
         'render': function(data){
-            $('#content').html(data.html);
+            $('#left-menu').html(data.html);
+            $('#content').html('<div id="editor"></div>');
             cm = CodeMirror.fromTextArea($('#editor').get(0));
             $('#editor').trigger('create');
         },
@@ -37,6 +38,9 @@ socket.on('message', function (data) {
 });
 
 $(document).ready(function() {
+
+    $('body').layout({ applyDefaultStyles: true });
+
     $('#loginform').on('submit', function (event){
         event.preventDefault();
         emit('login', {username: $('input[name="user[name]"]').val(), password: $('input[name="user[password]"]').val()});

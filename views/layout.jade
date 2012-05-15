@@ -2,18 +2,19 @@ doctype 5
 html(lang="en")
   head
     title= title
-    link(rel="stylesheet", type="text/css", href="/stylesheets/style.css")
     link(rel="stylesheet", type="text/css", href="/stylesheets/flick/jquery-ui-1.8.20.custom.css")
+    link(rel="stylesheet", type="text/css", href="/stylesheets/layout-default-latest.css")
     link(rel="stylesheet", type="text/css", href="/codemirror/lib/codemirror.css")
+    link(rel="stylesheet", type="text/css", href="/stylesheets/style.css")
     script(type="text/javascript", src="/javascripts/jquery-1.7.2.min.js")
     script(type="text/javascript", src="/javascripts/jquery-ui-1.8.20.custom.min.js")
+    script(type="text/javascript", src="/javascripts/jquery.layout-latest.js")
     script(type="text/javascript", src="/socket.io/socket.io.js")
     script(type="text/javascript", src="/javascripts/init.js")
     script(type="text/javascript", src="/codemirror/lib/codemirror.js")
     script(type="text/javascript", src="/javascripts/lazzy.js")
   body
     include includes/header
-    #container
-      include includes/left-menu
-      #content
-        block content
+    include includes/left-menu
+    #content.ui-widget-content.ui-layout-center
+      block content
