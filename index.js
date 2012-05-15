@@ -1,6 +1,5 @@
 var express = require('express'),
     fs = require('fs'),
-    less = require('connect-less'),
     app = express.createServer(),
     io = require('socket.io').listen(app),
     jade = require('jade'),
@@ -12,7 +11,6 @@ app.configure(function(){
     app.set('view options', { layout: false });
     app.use(express.bodyParser());
     app.use(express.methodOverride());
-    app.use(less({ src: __dirname + '/public/' }));
     app.use(express.cookieParser("secret"));
     app.use(express.session({ secret: "I iz secret passphrase ! (change me!)" }));
     app.use(app.router);

@@ -14,8 +14,6 @@
     "jade": "*",
     "unixlib": "*",
     "jail": "*",
-    "connect-less": "*",
-    "less": "*",
     "passwd": "*",
     "socket.io": "*",
     "posix": "*"
