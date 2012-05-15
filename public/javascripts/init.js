@@ -2,10 +2,9 @@ var socket = io.connect(),
     cm = null,
     methods = {
         'render': function(data){
-            $('#left-menu').html(data.html);
-            $('#content').html('<div id="editor"></div>');
-            cm = CodeMirror.fromTextArea($('#editor').get(0));
-            $('#editor').trigger('create');
+            for (var i=0; i<data.length; i++){
+                $(data[i].target).html(data[i].html);
+            }
         },
         'title': function(data){
             $('title').text(data.title);
@@ -40,6 +39,16 @@ socket.on('message', function (data) {
 $(document).ready(function() {
 
     $('body').layout({ applyDefaultStyles: true });
+
+    /*jQueryUI Theming*/
+    $('button, input:button').livequery(function(){
+        $(this).button();
+    });
+
+    $('#editor').livequery(function(){
+        cm = CodeMirror.fromTextArea($(this).get(0));
+        $(this).trigger('create');
+    });
 
     $('#loginform').on('submit', function (event){
         event.preventDefault();

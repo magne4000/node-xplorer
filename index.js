@@ -37,7 +37,10 @@ function login(username, password, socket){
                 if (!!args.action){
                     if (args.action == 'render'){
                         var sPartial = getPartial('includes/partial/' + args.partial, {files: args.data.files, rootfolder: args.data.filepath});
-                        socket.send(JSON.stringify({action: 'render', data: {html: sPartial}}));
+                        socket.send(JSON.stringify({action: 'render', data: [
+                            {target: '#left-menu', html: sPartial},
+                            {target: '#content', html: '<div id="editor"></div>'}
+                        ]}));
                     }else if(args.action == 'error'){
                         console.log(args);
                     }else{
@@ -58,7 +61,10 @@ function login(username, password, socket){
             },
             'onbeforekill': function(){
                 var sPartial = getPartial('includes/partial/login', {title: "Login"});
-                socket.send(JSON.stringify({action: 'render', html: sPartial}));
+                socket.send(JSON.stringify({action: 'render', data: [
+                    {target: '#content', html: sPartial},
+                    {target: '#left-menu', html: ''}
+                ]}));
             },
             'methodsfile': __dirname + '/methods.js'
         }
