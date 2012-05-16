@@ -36,6 +36,26 @@ socket.on('message', function (data) {
     receive(data.action, data.data);
 });
 
+socket.on('disconnect', function() {
+    console.log('disconnect');
+});
+
+socket.on('connect_failed', function() {
+    console.log('connect_failed');
+});
+
+socket.on('error', function() {
+    console.log('error');
+});
+
+socket.on('reconnect_failed', function() {
+    console.log('reconnect_failed');
+});
+
+socket.on('reconnect', function() {
+    console.log('reconnect');
+});
+
 $(document).ready(function() {
 
     $('body').layout({ applyDefaultStyles: true });
