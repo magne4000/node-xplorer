@@ -61,7 +61,7 @@ $(document).ready(function() {
     $('body').layout({ applyDefaultStyles: true });
 
     /*jQueryUI Theming*/
-    $('button, input:button').livequery(function(){
+    $('button, input:submit').livequery(function(){
         $(this).button();
     });
 
