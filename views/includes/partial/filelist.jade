@@ -1,5 +1,12 @@
 - if (typeof(files) != 'undefined')
-  ul
+  - if (rootfolder == '/')
     for file in files
-      - var filepath = rootfolder + '/' + file
-      li(data-filepath=filepath)= file
+      - var filepath = rootfolder + file
+        li(data-filepath=filepath)
+          a= file
+  - else
+    ul
+      for file in files
+        - var filepath = rootfolder + '/' + file
+          li(data-filepath=filepath)
+            a= file

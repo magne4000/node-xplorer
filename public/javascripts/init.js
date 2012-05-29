@@ -3,7 +3,19 @@ var socket = io.connect(),
     methods = {
         'render': function(data){
             for (var i=0; i<data.length; i++){
-                $(data[i].target).html(data[i].html);
+                if (data[i].action){
+                    if (data[i].action == 'append'){
+                        $(data[i].target).append(data[i].html);
+                    }else if (data[i].action == 'prepend'){
+                        $(data[i].target).prepend(data[i].html);
+                    }
+                }else{
+                    $(data[i].target).html(data[i].html);
+                }
+                if (data[i].target.indexOf('#arbo' === 0)){
+                    $('#arbo').jstree('clean_node', data[i].target);
+                    $('#arbo').jstree('open_all', data[i].target);
+                }
             }
         },
         'title': function(data){
@@ -56,6 +68,8 @@ socket.on('reconnect', function() {
     console.log('reconnect');
 });
 
+$.jstree._themes = '/themes/jstree/';
+
 $(document).ready(function() {
 
     $('body').layout({ applyDefaultStyles: true });
@@ -64,7 +78,26 @@ $(document).ready(function() {
     $('button, input:submit').livequery(function(){
         $(this).button();
     });
+    
+    /*Jstree*/
+    $('#arbo').livequery(function(){
+        $(this).jstree({
+            "themes" : {
+                "theme" : "default",
+                "dots" : false,
+                "icons" : false
+            },
+            "plugins" : ["themes","ui","html_data"]
+        })
+        .on("select_node.jstree", function (event, data) {
+            // `data.rslt.obj` is the jquery extended node that was clicked
+            if (data.rslt.obj.hasClass('jstree-leaf')){
+                emit('file read', {filepath: data.rslt.obj.data('filepath')});
+            }
+        });
+    });
 
+    /*Editor*/
     $('#editor').livequery(function(){
         cm = CodeMirror.fromTextArea($(this).get(0));
         $(this).trigger('create');
@@ -75,12 +108,7 @@ $(document).ready(function() {
         emit('login', {username: $('input[name="user[name]"]').val(), password: $('input[name="user[password]"]').val()});
     });
     $('#disconnect').on('click', function(){
+        event.preventDefault();
         emit('logout');
-    });
-    /*$(document).on('click', 'li', function(){
-        emit('file stat', {filepath: $(this).data('filepath')});
-    });*/
-    $(document).on('click', 'li', function(){
-        emit('file read', {filepath: $(this).data('filepath')});
     });
 });

@@ -37,10 +37,16 @@ function login(username, password, socket){
                 if (!!args.action){
                     if (args.action == 'render'){
                         var sPartial = getPartial('includes/partial/' + args.partial, {files: args.data.files, rootfolder: args.data.filepath});
-                        socket.send(JSON.stringify({action: 'render', data: [
-                            {target: '#left-menu', html: sPartial},
-                            {target: '#content', html: '<div id="editor"></div>'}
-                        ]}));
+                        if (args.data.filepath != '/'){
+                            socket.send(JSON.stringify({action: 'render', data: [
+                                {target: '#arbo [data-filepath="'+args.data.filepath+'"]', html: sPartial, action: 'append'}
+                            ]}));
+                        }else{
+                            socket.send(JSON.stringify({action: 'render', data: [
+                                {target: '#arbo > ul', html: sPartial, action: 'append'},
+                                {target: '#content', html: '<div id="editor"></div>'}
+                            ]}));
+                        }
                     }else if(args.action == 'error'){
                         console.log(args);
                     }else{
@@ -63,7 +69,7 @@ function login(username, password, socket){
                 var sPartial = getPartial('includes/partial/login', {title: "Login"});
                 socket.send(JSON.stringify({action: 'render', data: [
                     {target: '#content', html: sPartial},
-                    {target: '#left-menu', html: ''}
+                    {target: '#arbo > ul', html: ''}
                 ]}));
             },
             'methodsfile': __dirname + '/methods.js'

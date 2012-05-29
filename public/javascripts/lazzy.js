@@ -1,11 +1,22 @@
 (function( $ ) {
     var modes = {},
     set = function(mode){
+        checkandload(mode);
+        cm.setOption('mode', mode);
+    },
+    checkandload = function(mode){
         if (!!mode && !modes[mode]){
+            switch(mode){ //Dependencies
+                case 'php':
+                    checkandload('clike');
+                    checkandload('xml');
+                    checkandload('css');
+                    checkandload('javascript');
+                    break;
+            }
             load(mode);
             modes[mode] = true;
         }
-        cm.setOption('mode', mode);
     },
     load = function(mode){
         $('<script/>')
