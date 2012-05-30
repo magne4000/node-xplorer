@@ -10,13 +10,13 @@
     "node": ">= 0.6.0"
   },
   "dependencies": {
-    "express": "*",
-    "jade": "*",
-    "unixlib": "*",
+    "express": "~2.5.9",
+    "jade": "0.26.x",
+    "unixlib": "0.1.x",
     "jail": "*",
-    "passwd": "*",
-    "socket.io": "*",
-    "posix": "*"
+    "passwd": "0.0.x",
+    "socket.io": "~0.9.6",
+    "posix": "~0.0.7"
   },
   "devDependencies": {}
 }
