@@ -1,7 +1,7 @@
 body {
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
   background: #ddd;
-}
+}/*
 a {
   color: #00B7FF;
 }
@@ -15,4 +15,9 @@ a {
   top: 0;
   bottom: 0;
   left: 300px;
-}
+}*/
+
+/* jQueryUI fixes */
+.jstree.ui-widget-content { border: 0 !important; }
+.jstree .ui-state-hover, .jstree.ui-widget-content .ui-state-hover, .jstree .ui-widget-header .ui-state-hover, .jstree .ui-state-focus, .jstree .ui-widget-content .ui-state-focus, .jstree .ui-widget-header .ui-state-focus { border: 0 !important; }
+.jstree .ui-state-default, .jstree.ui-widget-content .ui-state-default, .jstree .ui-widget-header .ui-state-default { border: 0 !important; }

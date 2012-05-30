@@ -43,7 +43,7 @@ function login(username, password, socket){
                             ]}));
                         }else{
                             socket.send(JSON.stringify({action: 'render', data: [
-                                {target: '#arbo > ul', html: sPartial, action: 'append'},
+                                {target: '#arbo', html: sPartial, action: 'append'},
                                 {target: '#content', html: '<div id="editor"></div>'}
                             ]}));
                         }

@@ -13,6 +13,18 @@ var socket = io.connect(),
                     $(data[i].target).html(data[i].html);
                 }
                 if (data[i].target.indexOf('#arbo' === 0)){
+                    if (data[i].target.indexOf('data-filepath') === -1){
+                        //root folder
+                        $('#arbo').jstree({
+                            "plugins" : ["ui","html_data","crrm","hotkeys","themeroller"]
+                        })
+                        .on("select_node.jstree", function (event, data) {
+                            // `data.rslt.obj` is the jquery extended node that was clicked
+                            if (data.rslt.obj.hasClass('jstree-leaf')){
+                                emit('file read', {filepath: data.rslt.obj.data('filepath')});
+                            }
+                        });
+                    }
                     $('#arbo').jstree('clean_node', data[i].target);
                     $('#arbo').jstree('open_all', data[i].target);
                 }
@@ -79,24 +91,6 @@ $(document).ready(function() {
         $(this).button();
     });
     
-    /*Jstree*/
-    $('#arbo').livequery(function(){
-        $(this).jstree({
-            "themes" : {
-                "theme" : "default",
-                "dots" : false,
-                "icons" : false
-            },
-            "plugins" : ["themes","ui","html_data"]
-        })
-        .on("select_node.jstree", function (event, data) {
-            // `data.rslt.obj` is the jquery extended node that was clicked
-            if (data.rslt.obj.hasClass('jstree-leaf')){
-                emit('file read', {filepath: data.rslt.obj.data('filepath')});
-            }
-        });
-    });
-
     /*Editor*/
     $('#editor').livequery(function(){
         cm = CodeMirror.fromTextArea($(this).get(0));
