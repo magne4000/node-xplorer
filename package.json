@@ -14,7 +14,6 @@
     "jade": "0.26.x",
     "unixlib": "0.1.x",
     "jail": "*",
-    "passwd": "0.0.x",
     "socket.io": "~0.9.6",
     "posix": "~0.0.7"
   },
