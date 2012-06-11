@@ -24,6 +24,8 @@ var socket = io.connect(),
                                 emit('file read', {filepath: data.rslt.obj.data('filepath')});
                             }
                         });
+                    }else{
+                        $('#arbo').jstree('refresh');
                     }
                     $('#arbo').jstree('clean_node', data[i].target);
                     $('#arbo').jstree('open_all', data[i].target);
