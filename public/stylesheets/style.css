@@ -1,15 +1,14 @@
 body {
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
   background: #ddd;
-}/*
-a {
-  color: #00B7FF;
 }
-#left-menu,
-#container {
-  display: inline-block;
+#left-menu {
+  margin: 0;
 }
-#editor {
+.CodeMirror-scroll {
+  height: 100%;
+}
+/*#editor {
   position: absolute;
   right: 0;
   top: 0;

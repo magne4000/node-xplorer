@@ -2,20 +2,19 @@
   "author": "Joël Charles <joel.charles91@gmail.com>",
   "name": "xplorer",
   "description": "HTML5 advanced file explorer",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "repository": {
     "url": ""
   },
   "engines": {
-    "node": ">= 0.6.0"
+    "node": ">= 0.10.0"
   },
   "dependencies": {
-    "express": "~2.5.9",
-    "jade": "0.26.x",
-    "unixlib": "0.1.x",
-    "jail": "*",
-    "socket.io": "~0.9.6",
-    "posix": "~0.0.7"
+    "express": "3.*",
+    "jade": "0.*",
+    "jail": "0.1.*",
+    "socket.io": "0.*",
+    "posix": "1.*"
   },
   "devDependencies": {}
 }

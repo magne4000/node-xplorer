@@ -1,7 +1,9 @@
 var express = require('express'),
     fs = require('fs'),
-    app = express.createServer(),
-    io = require('socket.io').listen(app),
+    app = express(),
+    http = require('http'),
+    server = http.createServer(app),
+    io = require('socket.io').listen(server),
     jade = require('jade'),
     jail = require('jail');
 
@@ -118,5 +120,5 @@ app.get('/', function(req, res){
     res.render('use', {title: "Login", content: "login"});
 });
 
-app.listen(1337);
+server.listen(1337);
 console.log('Express server started on port %s', 1337);
